@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Birthday Countdown</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background: #fefefe;
+      }
+
+      /* Countdown Page Styles */
+      .countdown-page {
+        min-height: 100vh;
+        background: linear-gradient(
+          135deg,
+          #fff5f5 0%,
+          #fef7f0 50%,
+          #fef3ec 100%
+        );
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        padding: 2rem;
+      }
+
+      .countdown-page.hidden {
+        display: none;
+      }
+
+      /* Subtle floating elements */
+      .floating-shape {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(251, 191, 165, 0.1);
+        pointer-events: none;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .shape-1 {
+        width: 120px;
+        height: 120px;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+
+      .shape-2 {
+        width: 80px;
+        height: 80px;
+        top: 20%;
+        right: 15%;
+        animation-delay: 2s;
+      }
+
+      .shape-3 {
+        width: 60px;
+        height: 60px;
+        bottom: 15%;
+        left: 20%;
+        animation-delay: 4s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) scale(1);
+          opacity: 0.1;
+        }
+        50% {
+          transform: translateY(-20px) scale(1.1);
+          opacity: 0.2;
+        }
+      }
+
+      .countdown-container {
+        text-align: center;
+        max-width: 600px;
+        position: relative;
+        z-index: 10;
+      }
+
+      .countdown-title {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(2.5rem, 7vw, 4rem);
+        font-weight: 500;
+        color: #8b5a3c;
+        margin-bottom: 1rem;
+        line-height: 1.1;
+      }
+
+      .countdown-subtitle {
+        font-size: clamp(1rem, 3vw, 1.25rem);
+        color: #a0716f;
+        margin-bottom: 4rem;
+        font-weight: 400;
+        line-height: 1.5;
+        font-style: italic;
+      }
+
+      .countdown-timer {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .time-unit {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(251, 191, 165, 0.2);
+        border-radius: 16px;
+        padding: 2rem 1rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .time-unit::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #f4a261, #e76f51);
+        opacity: 0.6;
+      }
+
+      .time-number {
+        font-size: clamp(2rem, 4vw, 2.5rem);
+        font-weight: 600;
+        color: #8b5a3c;
+        display: block;
+        margin-bottom: 0.5rem;
+        font-family: "Inter", sans-serif;
+      }
+
+      .time-label {
+        font-size: 0.875rem;
+        color: #a0716f;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 500;
+      }
+
+      .countdown-message {
+        font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+        color: #6d5a56;
+        line-height: 1.6;
+        font-weight: 400;
+        max-width: 500px;
+        margin: 0 auto;
+        font-style: italic;
+      }
+
+      /* Birthday Page Styles */
+      .birthday-page {
+        min-height: 100vh;
+        background: linear-gradient(
+          135deg,
+          #fff0f5 0%,
+          #fef3e7 30%,
+          #f0f9ff 70%,
+          #fef3e7 100%
+        );
+        position: relative;
+        display: none;
+        overflow: hidden;
+      }
+
+      .birthday-page.visible {
+        display: block;
+        animation: fadeIn 1.5s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Animated background elements */
+      .bg-animation {
+        position: absolute;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .floating-heart {
+        color: #ff6b9d;
+        font-size: 24px;
+        animation: heartFloat 8s ease-in-out infinite;
+      }
+
+      .floating-star {
+        color: #ffd93d;
+        font-size: 20px;
+        animation: starTwinkle 4s ease-in-out infinite;
+      }
+
+      .floating-flower {
+        color: #ff8fab;
+        font-size: 18px;
+        animation: flowerSway 6s ease-in-out infinite;
+      }
+
+      .heart-1 {
+        top: 15%;
+        left: 8%;
+        animation-delay: 0s;
+      }
+
+      .heart-2 {
+        top: 60%;
+        right: 10%;
+        animation-delay: 3s;
+      }
+
+      .star-1 {
+        top: 25%;
+        right: 20%;
+        animation-delay: 1s;
+      }
+
+      .star-2 {
+        bottom: 30%;
+        left: 15%;
+        animation-delay: 4s;
+      }
+
+      .flower-1 {
+        top: 70%;
+        left: 5%;
+        animation-delay: 2s;
+      }
+
+      .flower-2 {
+        top: 40%;
+        right: 8%;
+        animation-delay: 5s;
+      }
+
+      @keyframes heartFloat {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+          opacity: 0.6;
+        }
+        50% {
+          transform: translateY(-30px) rotate(10deg);
+          opacity: 1;
+        }
+      }
+
+      @keyframes starTwinkle {
+        0%,
+        100% {
+          transform: scale(1) rotate(0deg);
+          opacity: 0.4;
+        }
+        50% {
+          transform: scale(1.3) rotate(180deg);
+          opacity: 1;
+        }
+      }
+
+      @keyframes flowerSway {
+        0%,
+        100% {
+          transform: rotate(-5deg);
+          opacity: 0.5;
+        }
+        50% {
+          transform: rotate(5deg);
+          opacity: 0.9;
+        }
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+        position: relative;
+        z-index: 10;
+      }
+
+      /* Header Section */
+      .header {
+        text-align: center;
+        margin-bottom: 4rem;
+      }
+
+      .main-title {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 500;
+        background: linear-gradient(45deg, #ff6b9d, #c084fc, #60a5fa, #34d399);
+        background-size: 300% 300%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 2rem;
+        line-height: 1.2;
+        padding: 0.1em 0;
+        -webkit-text-stroke: 0.5px transparent;
+      }
+
+      @keyframes gradientShift {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      .name-title {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 400;
+        color: #e76f51;
+        margin-bottom: 1rem;
+        animation: bounce 2s ease-in-out infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-10px);
+        }
+        60% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .subtitle {
+        font-size: clamp(1rem, 2.5vw, 1.2rem);
+        color: #a0716f;
+        font-weight: 400;
+        margin-bottom: 3rem;
+      }
+
+      /* Photo Section */
+      .photo-container {
+        display: flex;
+        justify-content: center;
+        margin: 3rem 0 4rem;
+      }
+
+      .photo-frame {
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 6px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 20px 40px rgba(139, 90, 60, 0.15),
+          0 0 0 4px rgba(255, 107, 157, 0.3);
+        transition: all 0.5s ease;
+        position: relative;
+        animation: photoGlow 3s ease-in-out infinite alternate;
+      }
+
+      .photo-frame:hover {
+        transform: scale(1.1) rotate(3deg);
+        box-shadow: 0 25px 50px rgba(139, 90, 60, 0.2),
+          0 0 0 6px rgba(255, 107, 157, 0.5), 0 0 30px rgba(255, 107, 157, 0.3);
+      }
+
+      @keyframes photoGlow {
+        from {
+          box-shadow: 0 20px 40px rgba(139, 90, 60, 0.15),
+            0 0 0 4px rgba(255, 107, 157, 0.3);
+        }
+        to {
+          box-shadow: 0 25px 50px rgba(139, 90, 60, 0.2),
+            0 0 0 6px rgba(96, 165, 250, 0.4);
+        }
+      }
+
+      .photo-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Messages Section */
+      .messages-section {
+        margin-top: 4rem;
+      }
+
+      .messages-header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .messages-title {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(2rem, 4vw, 2.5rem);
+        font-weight: 500;
+        color: #8b5a3c;
+        margin-bottom: 0.5rem;
+      }
+
+      .messages-subtitle {
+        color: #a0716f;
+        font-size: 1.1rem;
+        font-weight: 400;
+      }
+
+      .messages-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+      }
+
+      .message-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(251, 191, 165, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        position: relative;
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: slideUp 0.6s ease-out forwards;
+      }
+
+      .message-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(139, 90, 60, 0.1);
+        border-color: rgba(251, 191, 165, 0.3);
+      }
+
+      .message-card:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .message-card:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .message-card:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .message-card:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      .message-card:nth-child(5) {
+        animation-delay: 0.5s;
+      }
+      .message-card:nth-child(6) {
+        animation-delay: 0.6s;
+      }
+
+      @keyframes slideUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card-header {
+        margin-bottom: 1.5rem;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        background: linear-gradient(135deg, #ff6b9d, #c084fc);
+        color: white;
+        box-shadow: 0 8px 16px rgba(255, 107, 157, 0.3);
+        animation: iconPulse 2s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+
+      @keyframes iconPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      .card-text {
+        flex: 1;
+      }
+
+      .card-author {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #8b5a3c;
+        margin-bottom: 0.3rem;
+      }
+
+      .card-role {
+        font-size: 0.9rem;
+        color: #a0716f;
+        font-weight: 400;
+      }
+
+      .card-message {
+        color: #6d5a56;
+        line-height: 1.6;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        text-align: justify;
+      }
+
+      .card-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+
+      .card-signature {
+        font-size: 0.85rem;
+        color: #e76f51;
+        font-weight: 500;
+        font-style: italic;
+      }
+
+      /* Footer */
+      .footer {
+        text-align: center;
+        margin-top: 4rem;
+        padding: 2rem;
+      }
+
+      .footer-main {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        color: #8b5a3c;
+        font-weight: 400;
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-sub {
+        font-size: 1rem;
+        color: #a0716f;
+        font-weight: 400;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .countdown-timer {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+
+        .time-unit {
+          padding: 1.5rem 0.75rem;
+        }
+
+        .messages-grid {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .photo-frame {
+          width: 160px;
+          height: 160px;
+        }
+
+        .container {
+          padding: 2rem 1rem;
+        }
+      }
+
+      #missedMessage {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+      }
+
+      #missedMessage.visible {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      #missedMessage.hiding {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Countdown Page -->
+    <div id="countdownPage" class="countdown-page">
+      <!-- Subtle floating shapes -->
+      <div class="floating-shape shape-1"></div>
+      <div class="floating-shape shape-2"></div>
+      <div class="floating-shape shape-3"></div>
+
+      <div class="countdown-container">
+        <h1 class="countdown-title">Something Beautiful Awaits</h1>
+        <p class="countdown-subtitle">
+          For the woman who makes every day brighter
+          <br />
+          A celebration as special as her heart
+        </p>
+
+        <div class="countdown-timer">
+          <div class="time-unit">
+            <span id="days" class="time-number">00</span>
+            <span class="time-label">Days</span>
+          </div>
+          <div class="time-unit">
+            <span id="hours" class="time-number">00</span>
+            <span class="time-label">Hours</span>
+          </div>
+          <div class="time-unit">
+            <span id="minutes" class="time-number">00</span>
+            <span class="time-label">Minutes</span>
+          </div>
+          <div class="time-unit">
+            <span id="seconds" class="time-number">00</span>
+            <span class="time-label">Seconds</span>
+          </div>
+        </div>
+
+        <p class="countdown-message">
+          The moment arrives at midnight, Philippine time...
+        </p>
+        <p class="countdown-message">Where love and gratitude come together</p>
+      </div>
+    </div>
+
+    <!-- Missed Countdown Message -->
+    <div
+      id="missedMessage"
+      style="
+        display: none;
+        text-align: center;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(251, 191, 165, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        max-width: 300px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        font-family: 'Inter', sans-serif;
+        z-index: 1000;
+      "
+    >
+      <h3 style="color: #8b5a3c; margin-bottom: 1.5rem">
+        ⏳ You Just Missed It!
+      </h3>
+      <p
+        style="
+          color: #6d5a56;
+          font-size: 1rem;
+          line-height: 1.5;
+          font-style: italic;
+        "
+      >
+        The official countdown has ended, but don't worry — we saved a little
+        magic just for you...
+      </p>
+    </div>
+
+    <!-- Birthday Page -->
+    <div id="birthdayPage" class="birthday-page">
+      <!-- Background animations -->
+      <div class="floating-heart bg-animation heart-1">❤️</div>
+      <div class="floating-heart bg-animation heart-2">💖</div>
+      <div class="floating-star bg-animation star-1">✨</div>
+      <div class="floating-star bg-animation star-2">🌟</div>
+      <div class="floating-flower bg-animation flower-1">🌸</div>
+      <div class="floating-flower bg-animation flower-2">🌷</div>
+
+      <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+          <h1 class="main-title">Happy Birthday!</h1>
+          <p class="subtitle">
+            Today we celebrate you — the quiet strength behind our smiles,
+            <br />
+            the one who has given so much so we could have more.
+          </p>
+        </header>
+
+        <!-- Photo Section -->
+        <section class="photo-container">
+          <div class="photo-frame">
+            <img src="mom-photo.jpg" alt="Mom's Photo" />
+          </div>
+        </section>
+
+        <!-- Messages Section -->
+        <section class="messages-section">
+          <div class="messages-header">
+            <h3 class="messages-title">Words from Our Hearts</h3>
+            <p class="messages-subtitle">
+              A few words to tell you just how much you mean to us.
+            </p>
+          </div>
+
+          <div class="messages-grid">
+            <div class="message-card">
+              <div class="card-header">
+                <div class="card-icon">💌</div>
+                <div class="card-text">
+                  <h4 class="card-author">From: Sharmaine</h4>
+                </div>
+              </div>
+              <p class="card-message">
+                Happiest birthday to my selfless, sweet, caring, loving, kind
+                and generous sister. Our lives are so much better with you in
+                it. We may be miles away for most of our lives but I’m grateful
+                for the support and life lessons you’ve taught me. Thank you.
+                May God bless you more and grant your heart’s desires.
+              </p>
+              <div class="card-footer">
+                <span class="card-signature">Please be safe. I love you. </span>
+              </div>
+            </div>
+
+            <div class="message-card">
+              <div class="card-header">
+                <div class="card-icon">💌</div>
+                <div class="card-text">
+                  <h4 class="card-author">From: Billy</h4>
+                </div>
+              </div>
+              <p class="card-message">
+                Hello mama, thank you for all the support you have given me.
+                Couldn't ask for more. It is your very special day! I hope you
+                enjoy it and be blessed by God and the people around you. I wish
+                you to have a good health and hope that your plans be
+                accomplished in the future.
+              </p>
+              <div class="card-footer">
+                <span class="card-signature"
+                  >I love you and stay safe, always.</span
+                >
+              </div>
+            </div>
+
+            <div class="message-card">
+              <div class="card-header">
+                <div class="card-icon">💌</div>
+                <div class="card-text">
+                  <h4 class="card-author">From: Diane</h4>
+                </div>
+              </div>
+              <p class="card-message">
+                Hi tita, Happy Birthday! Thank you for being so supportive and
+                loving. I pray that God blesses you with good health, happiness,
+                and many more wonderful years ahead. May your day be filled with
+                joy, laughter, and His guidance always. Please take care.
+              </p>
+              <div class="card-footer">
+                <span class="card-signature">We love you, tita.</span>
+              </div>
+            </div>
+
+            <div class="message-card">
+              <div class="card-header">
+                <div class="card-icon">💌</div>
+                <div class="card-text">
+                  <h4 class="card-author">From: Ginno</h4>
+                </div>
+              </div>
+              <p class="card-message">
+                Hello ate jean. Igreet daw kita sabi ni billy. My shoe size is
+                US 9.5. See you soon. Happy birthday ate jean. 😁🍻
+              </p>
+              <div class="card-footer">
+                <span class="card-signature">Ingat ka lagi diyan.</span>
+              </div>
+            </div>
+
+            <div class="message-card">
+              <div class="card-header">
+                <div class="card-icon">💌</div>
+                <div class="card-text">
+                  <h4 class="card-author">From: Alan</h4>
+                </div>
+              </div>
+              <p class="card-message">
+                Happy Birthday, Tita Jean! I wish you all the best, and may you
+                always stay safe there. If ever you come home to the
+                Philippines, our door will always be open for you. Once again,
+                happy birthday, Tita! Take care, and we hope to see and bond
+                with you soon.
+              </p>
+              <div class="card-footer">
+                <span class="card-signature">Love lots!</span>
+              </div>
+            </div>
+
+            <div class="message-card">
+              <div class="card-header">
+                <div class="card-icon">🖊️</div>
+                <div class="card-text">
+                  <h4 class="card-author">From: Someone Thinking of You</h4>
+                </div>
+              </div>
+              <p class="card-message">
+                Your message is almost ready — it's being written with love!
+              </p>
+              <div class="card-footer">
+                <span class="card-signature">With love, always</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <p class="footer-main">Isaiah 66:13 (NIV)</p>
+          <p class="footer-sub">
+            “As a mother comforts her child, so will I comfort you; and you will
+            be comforted over Jerusalem.”
+          </p>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      const targetDate = new Date("2025-09-21T00:00:00+08:00");
+
+      function updateCountdown() {
+        const now = new Date();
+        const philippineTime = new Date(
+          now.toLocaleString("en-US", { timeZone: "Asia/Manila" })
+        );
+        const diff = targetDate - philippineTime;
+
+        if (diff <= 0) {
+          showBirthdayPage();
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / 1000 / 60) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        document.getElementById("days").textContent = String(days).padStart(
+          2,
+          "0"
+        );
+        document.getElementById("hours").textContent = String(hours).padStart(
+          2,
+          "0"
+        );
+        document.getElementById("minutes").textContent = String(
+          minutes
+        ).padStart(2, "0");
+        document.getElementById("seconds").textContent = String(
+          seconds
+        ).padStart(2, "0");
+      }
+
+      function showBirthdayPage() {
+        document.getElementById("countdownPage").classList.add("hidden");
+        document.getElementById("birthdayPage").classList.add("visible");
+      }
+
+      function checkInitialState() {
+        const now = new Date();
+        const philippineTime = new Date(
+          now.toLocaleString("en-US", { timeZone: "Asia/Manila" })
+        );
+
+        if (philippineTime.getTime() >= targetDate.getTime()) {
+          // Show countdown page first for 4 seconds so visitor can read it
+          setTimeout(() => {
+            // Show missed message
+            const missedMsg = document.getElementById("missedMessage");
+            missedMsg.style.display = "block";
+            // Force reflow so transition works
+            void missedMsg.offsetWidth;
+            missedMsg.classList.add("visible");
+
+            setTimeout(() => {
+              missedMsg.classList.add("hiding");
+              // Wait for fade-out before switching page
+              setTimeout(() => {
+                missedMsg.classList.remove("visible", "hiding");
+                missedMsg.style.display = "none";
+                showBirthdayPage();
+              }, 400);
+            }, 4000); // keep message visible for 4 seconds
+          }, 5000); // delay 5 seconds before showing missed message
+        } else {
+          updateCountdown();
+          setInterval(updateCountdown, 3000);
+        }
+      }
+
+      // Only run once when DOM is ready
+      document.addEventListener("DOMContentLoaded", checkInitialState);
+    </script>
+  </body>
+</html>
